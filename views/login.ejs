@@ -1,0 +1,26 @@
+<html>
+<%- include('./partials/head.ejs') %>
+
+    <body>
+        <section class="bg-primary-2 h-screen flex flex-col">
+            <div class="flex-1 text-primary-6 py-20 flex flex-col justify-center">
+                <div class="container mx-auto px-4 text-center">
+                    <h1
+                        class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-6 to-primary-4 bg-clip-text text-transparent mb-6 leading-tight pb-2">
+                        Login to Looper!
+                    </h1>
+                    <div class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 justify-center">
+                        <button
+                            class="font-black tracking-wide text-primary-1 bg-primary-6 h-11 rounded-md px-8 flex items-center justify-center">
+                            <a href="/v1/auth/spotify/login">Login with Spotify</a>
+                            <img src="/logo/spotify-logo-white.png" class="ml-2 h-5 w-5" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <%- include('./partials/footer.ejs') %>
+        </section>
+        <%- include('./partials/scripts.ejs') %>
+    </body>
+
+</html>

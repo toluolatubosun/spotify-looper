@@ -1,0 +1,193 @@
+<html>
+<%- include('./partials/head.ejs') %>
+
+    <body>
+        <section class="bg-primary-2 min-h-screen flex flex-col">
+            <div class="flex-1 text-primary-6 py-20 flex flex-col justify-center">
+                <div class="container mx-auto px-4 text-center">
+                    <div id="loopStatus"
+                        class="max-w-xl mx-auto bg-primary-1 rounded-lg shadow-lg p-4 mb-6 border-l-4 hidden">
+                        <div class="flex items-center justify-between">
+                            <p class="text-primary-6">Loop is currently running</p>
+                            <button onclick="clearCurrentLoop()"
+                                class="bg-primary-6 text-primary-1 px-4 py-1 rounded hover:bg-primary-5 transition-colors">
+                                Stop Loop
+                            </button>
+                        </div>
+                    </div>
+
+                    <h1
+                        class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-6 to-primary-4 bg-clip-text text-transparent mb-6 leading-tight pb-2">
+                        Welcome, <%= user.name || user.email %>!
+                    </h1>
+
+                    <% if (currentPlayingTrack && currentPlayingTrack.item) { %>
+                        <div class="max-w-xl mx-auto bg-primary-1 rounded-lg shadow-lg p-6 mt-8">
+                            <a href="<%= currentPlayingTrack.item.album.external_urls.spotify %>" target="_blank"
+                                rel="noopener noreferrer">
+                                <img src="<%= currentPlayingTrack.item.album.images[0].url %>"
+                                    alt="Album Art for <%= currentPlayingTrack.item.album.name %>"
+                                    class="w-48 h-48 mx-auto rounded-lg shadow-lg mb-4 hover:opacity-80 transition-opacity">
+                            </a>
+
+                            <h2 class="text-2xl font-bold text-primary-6 mb-2">
+                                <a href="<%= currentPlayingTrack.item.external_urls.spotify %>"
+                                    class="hover:text-primary-4 transition-colors" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <%= currentPlayingTrack.item.name %>
+                                </a>
+                            </h2>
+
+                            <p class="text-primary-5 mb-2">
+                                Album:
+                                <a href="<%= currentPlayingTrack.item.album.external_urls.spotify %>"
+                                    class="hover:text-primary-4 transition-colors" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <%= currentPlayingTrack.item.album.name %>
+                                </a>
+                            </p>
+
+                            <p class="text-primary-5">
+                                Artists:
+                                <% currentPlayingTrack.item.artists.forEach((artist, index)=> { %>
+                                    <a href="<%= artist.external_urls.spotify %>"
+                                        class="hover:text-primary-4 transition-colors" target="_blank"
+                                        rel="noopener noreferrer">
+                                        <%= artist.name %>
+                                    </a><%- index < currentPlayingTrack.item.artists.length - 1 ? ', ' : '' %>
+                                        <% }); %>
+                            </p>
+
+                            <form onsubmit="upsertLoop(event)"
+                                class="mt-6 flex flex-col md:flex-row items-center justify-center gap-4">
+                                <div
+                                    class="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input placeholder="Loop Start (00:00)" pattern="^([0-5]?[0-9]):([0-5][0-9])$"
+                                        type="string" id="loopStart" name="loopStart"
+                                        class="w-full bg-primary-2 text-primary-6 rounded px-3 py-1" required>
+                                </div>
+
+                                <div
+                                    class="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-auto">
+                                    <input placeholder="Loop End (10:00)" pattern="^([0-5]?[0-9]):([0-5][0-9])$"
+                                        type="string" id="loopEnd" name="loopEnd"
+                                        class="w-full bg-primary-2 text-primary-6 rounded px-3 py-1" required>
+                                </div>
+
+                                <button id="loopButton" type="submit"
+                                    class="w-full md:w-auto bg-primary-6 text-primary-1 px-4 py-1 rounded hover:bg-primary-5 transition-colors disabled:opacity-50">
+                                    Loop
+                                </button>
+                            </form>
+                        </div>
+                        <% } else { %>
+                            <p class="text-xl text-primary-5">
+                                No track is currently playing. Please play a song on Spotify.
+                            </p>
+                            <% } %>
+                </div>
+            </div>
+            <%- include('./partials/footer.ejs') %>
+        </section>
+        <%- include('./partials/scripts.ejs') %>
+            <script>
+                const CLIENT_ID = `${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
+
+                let loopInterval;
+                let spotifyLoop = {};
+
+                /////////////////////////// HELPER FUNCTIONS ///////////////////////////
+                function clearCurrentLoop() {
+                    if (loopInterval) {
+                        clearInterval(loopInterval);
+                        loopInterval = null;
+                    }
+                }
+
+                function timestampToMs(timestamp) {
+                    const [minutes, seconds] = timestamp.split(':').map(Number);
+                    return (minutes * 60 + seconds) * 1000;
+                }
+
+                function clearCurrentLoop() {
+                    if (loopInterval) {
+                        clearInterval(loopInterval);
+                        loopInterval = null;
+                        document.getElementById('loopStatus').classList.add('hidden');
+                    }
+                }
+                /////////////////////////// HELPER FUNCTIONS ///////////////////////////
+
+                // Move to the start of the loop
+                async function goToLoopStart() {
+                    try {
+                        // Call the API to move to the start of the loop
+                        const response = await fetch('/v1/spotify/loop/go-to-start/api', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ spotify_loop_id: spotifyLoop.id, client_id: CLIENT_ID })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            alert('Error: ' + data.message);
+                        } else {
+                            console.log(data);
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    }
+                }
+
+                async function startLooping(startTime, endTime) {
+                    clearCurrentLoop(); // Clear the current loop if any
+                    document.getElementById('loopStatus').classList.remove('hidden');
+
+                    const loopDuration = timestampToMs(endTime) - timestampToMs(startTime);
+                    if (loopDuration <= 0) return;
+
+                    await goToLoopStart();
+
+                    loopInterval = setInterval(async () => {
+                        await goToLoopStart();
+                    }, Math.max(loopDuration - 500, 1000)); // Start 0.5 seconds before the loop ends to factor in latency
+                }
+
+                // Create or update the loop
+                async function upsertLoop(event) {
+                    event.preventDefault();
+
+                    document.getElementById('loopButton').disabled = true;
+                    document.getElementById('loopButton').textContent = 'Loading...';
+
+                    const loopEnd = document.getElementById('loopEnd').value;
+                    const loopStart = document.getElementById('loopStart').value;
+
+                    try {
+                        // Call the API to create or update the loop
+                        const response = await fetch('/v1/spotify/loop/api', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ end_timestamp: loopEnd, start_timestamp: loopStart, client_id: CLIENT_ID })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            alert('Error: ' + data.message);
+                        } else {
+                            spotifyLoop = data.data;
+                            startLooping(loopStart, loopEnd);
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    }
+
+                    document.getElementById('loopButton').disabled = false;
+                    document.getElementById('loopButton').textContent = 'Loop';
+                }
+            </script>
+    </body>
+
+</html>
