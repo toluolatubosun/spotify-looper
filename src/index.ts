@@ -21,7 +21,7 @@ app.use(routes);
 // Error middlewares
 configureErrorMiddleware(app);
 
-const PORT: number | string = process.env.PORT || 4000;
+const PORT: number | string = process.env.PORT || 4001;
 
 // Listen to server port
 httpServer.listen(PORT, async () => {

@@ -10,6 +10,7 @@ const configureErrorMiddleware = (app: Express): Express => {
 
     // Handle errors middleware
     app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+        console.log(error.name, "====", error.message);
         console.error(error);
 
         let statusCode = 500;

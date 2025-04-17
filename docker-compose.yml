@@ -6,9 +6,20 @@ services:
             POSTGRES_PASSWORD: password
             POSTGRES_DB: looper
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - postgres_data_spotify_looper:/var/lib/postgresql/data
+
+    app:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        volumes:
+            - .:/app
+        depends_on:
+            - db
         ports:
-            - "5420:5432"
+            - "4001:4001"
+        environment:
+            DATABASE_URL: postgres://postgres:password@db:5432/looper
 
 volumes:
-    postgres_data:
+    postgres_data_spotify_looper:

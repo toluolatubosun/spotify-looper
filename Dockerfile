@@ -37,10 +37,10 @@ RUN cp -r public dist/public
 # ==========================================
 
 # Set port environment variable
-ENV PORT=80
+ENV PORT=4001
 
 # Expose port 80
-EXPOSE 80
+EXPOSE 4001
 
 # Start the application
 CMD ["dumb-init", "node", "dist/src/index.js"]
