@@ -29,9 +29,6 @@ ENV NODE_ENV=production
 # - Build TSC
 RUN yarn build
 
-# - Run Prisma Setup Command
-RUN yarn prisma:setup
-
 # - Copy the public folder to the dist folder
 RUN cp -r public dist/public
 # ==========================================
@@ -42,5 +39,5 @@ ENV PORT=4001
 # Expose port 80
 EXPOSE 4001
 
-# Start the application
-CMD ["dumb-init", "node", "dist/src/index.js"]
+# Start the application with Prisma setup at runtime
+CMD ["sh", "-c", "yarn prisma:setup && dumb-init node dist/src/index.js"]
