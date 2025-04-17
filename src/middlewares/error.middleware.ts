@@ -33,6 +33,14 @@ const configureErrorMiddleware = (app: Express): Express => {
                 break;
             }
 
+            case "WebapiError": {
+                statusCode = 500;
+                message = "Send an email to toluolatubosun@gmail.com to gain access to the platform";
+                res.clearCookie("access_token");
+
+                break;
+            }
+
             case "SyntaxError":
             case "ValidationError": {
                 statusCode = 400;
