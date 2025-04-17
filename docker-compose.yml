@@ -7,8 +7,10 @@ services:
             POSTGRES_DB: looper
         volumes:
             - postgres_data_spotify_looper:/var/lib/postgresql/data
-        ports:
-            - "5432:5432"
+        # ports:
+        #     - "5432:5432"
+        networks:
+            - spotify-looper-network
 
     app:
         build:
@@ -22,6 +24,12 @@ services:
             - "4001:4001"
         environment:
             DATABASE_URL: postgres://postgres:password@postgres-looper:5432/looper
+        networks:
+            - spotify-looper-network
 
 volumes:
     postgres_data_spotify_looper:
+
+networks:
+    spotify-looper-network:
+        driver: bridge
