@@ -1,5 +1,5 @@
 services:
-    db:
+    postgres-looper:
         image: postgres:15.6
         environment:
             POSTGRES_USER: postgres
@@ -7,6 +7,8 @@ services:
             POSTGRES_DB: looper
         volumes:
             - postgres_data_spotify_looper:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
 
     app:
         build:
@@ -15,11 +17,11 @@ services:
         volumes:
             - .:/app
         depends_on:
-            - db
+            - postgres-looper
         ports:
             - "4001:4001"
         environment:
-            DATABASE_URL: postgres://postgres:password@db:5432/looper
+            DATABASE_URL: postgres://postgres:password@postgres-looper:5432/looper
 
 volumes:
     postgres_data_spotify_looper:
